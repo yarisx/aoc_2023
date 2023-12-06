@@ -37,19 +37,16 @@ struct {
     }
 } map_less_op;
 
-int update_rngs2(const pmap_t m, const rnglist_t *irng, rnglist_t *org)
+int update_rngs2(const pmap_t m, rnglist_t *irng, rnglist_t *org)
 {
-    rnglist_t tmp;
     bool processed = false;
 
-    tmp = *irng;
-
-    auto r = tmp.begin();
-    while (r != tmp.end())
+    auto r = irng->begin();
+    while (r != irng->end())
     {
         range_t rtmp(r->first, r->second);
         processed = false;
-        tmp.erase(r);
+        irng->erase(r);
 
         //std::cout<<"Checking range ["<<rtmp.first<<".."<<rtmp.second<<")"<<std::endl;
         for (auto mv : m->map)
@@ -67,7 +64,7 @@ int update_rngs2(const pmap_t m, const rnglist_t *irng, rnglist_t *org)
                     org->push_back(rtmp);
                     break;
                 }
-                tmp.push_back(range_t(rtmp.first, mv.s_start));
+                irng->push_back(range_t(rtmp.first, mv.s_start));
                 rtmp.first = mv.s_start;
             }
             if (rtmp.second > mv.s_start + mv.len)
@@ -76,7 +73,7 @@ int update_rngs2(const pmap_t m, const rnglist_t *irng, rnglist_t *org)
                 {
                     continue;
                 }
-                tmp.push_back(range_t(mv.s_start + mv.len, rtmp.second));
+                irng->push_back(range_t(mv.s_start + mv.len, rtmp.second));
                 rtmp.second = mv.s_start + mv.len;
             }
             if (rtmp.second > mv.s_start)
@@ -96,7 +93,7 @@ int update_rngs2(const pmap_t m, const rnglist_t *irng, rnglist_t *org)
             //std::cout<<"Res ["<<rtmp.first<<".."<<rtmp.second<<")"<<std::endl;
             org->push_back(rtmp);
         }
-        r = tmp.begin();
+        r = irng->begin();
     }
     return 0;
 }
@@ -201,7 +198,6 @@ int main(int argc, char **argv)
 
     for (auto m : alm)
     {
-        c_rngs->clear();
         // Update ranges, each potentially can be split
         update_rngs2(m, p_rngs, c_rngs);
         tmprng = p_rngs;
