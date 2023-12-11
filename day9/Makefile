@@ -1,6 +1,6 @@
 SRC := $(wildcard *.cc)
 BIN := $(SRC:.cc=.x)
-CXXFLAGS := -Wall -std=c++11
+CXXFLAGS := -Wall -std=c++14
 
 first: build
 	./$(BIN) input.txt 1

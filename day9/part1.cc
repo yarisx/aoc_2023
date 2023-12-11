@@ -2,15 +2,17 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
+#include <memory>
 
 typedef std::vector<int> line_t;
 typedef std::vector<line_t> lineset_t;
 
-int get_forecast(line_t* inln)
+int get_forecast(const line_t& inln)
 {
     bool all_zero = false;
-    line_t last_elems, diffs1 = *inln, diffs2;
-    line_t *it1 = &diffs1, *it2 = &diffs2, *tmp;
+    line_t last_elems;
+    std::unique_ptr<line_t> it1 = std::make_unique<line_t>(line_t(inln));
+    std::unique_ptr<line_t> it2 = std::make_unique<line_t>();
     int psum = 0, sum = 0;
 
     do
@@ -26,9 +28,7 @@ int get_forecast(line_t* inln)
             it2->push_back(diff);
             if (diff != 0) all_zero = false;
         }
-        tmp = it2;
-        it2 = it1;
-        it1 = tmp;
+        std::swap(it1, it2);
     }
     while (! all_zero);
     for (auto l = last_elems.size(); l > 0; l--)
@@ -39,11 +39,12 @@ int get_forecast(line_t* inln)
     return sum;
 }
 
-int get_backecast(line_t* inln)
+int get_backecast(const line_t& inln)
 {
     bool all_zero = false;
-    line_t first_elems, diffs1 = *inln, diffs2;
-    line_t *it1 = &diffs1, *it2 = &diffs2, *tmp;
+    line_t first_elems;
+    std::unique_ptr<line_t> it1 = std::make_unique<line_t>(line_t(inln));
+    std::unique_ptr<line_t> it2 = std::make_unique<line_t>();
     int psum = 0, sum = 0;
 
     do
@@ -59,9 +60,7 @@ int get_backecast(line_t* inln)
             it2->insert(it2->begin(), diff);
             if (diff != 0) all_zero = false;
         }
-        tmp = it2;
-        it2 = it1;
-        it1 = tmp;
+        std::swap(it1, it2);
     }
     while (! all_zero);
     for (auto l = first_elems.size(); l > 0; l--)
@@ -103,9 +102,9 @@ int main(int argc, char **argv)
     for (int i = 0; i < lineset.size(); i++)
     {
         if (first)
-            total += get_forecast(&lineset[i]);
+            total += get_forecast(lineset[i]);
         else
-            total += get_backecast(&lineset[i]);
+            total += get_backecast(lineset[i]);
     }
     std::cout<<"Total "<<total<<std::endl;
 }
