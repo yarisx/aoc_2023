@@ -39,11 +39,48 @@ int get_forecast(line_t* inln)
     return sum;
 }
 
+int get_backecast(line_t* inln)
+{
+    bool all_zero = false;
+    line_t first_elems, diffs1 = *inln, diffs2;
+    line_t *it1 = &diffs1, *it2 = &diffs2, *tmp;
+    int psum = 0, sum = 0;
+
+    do
+    {
+        first_elems.push_back(*(it1->begin()));
+        line_t::reverse_iterator i1, i2;
+        all_zero = true;
+        it2->clear();
+
+        for (i1 = it1->rbegin(), i2 = (it1->rbegin()) + 1; i2 != it1->rend(); i1++, i2++)
+        {
+            int diff = *i1 - *i2;
+            it2->insert(it2->begin(), diff);
+            if (diff != 0) all_zero = false;
+        }
+        tmp = it2;
+        it2 = it1;
+        it1 = tmp;
+    }
+    while (! all_zero);
+    for (auto l = first_elems.size(); l > 0; l--)
+    {
+        sum = first_elems[l - 1] - psum;
+        psum = sum;
+    }
+    return sum;
+}
+
 int main(int argc, char **argv)
 {
     std::string     s, is, idx;
     std::ifstream   in(argv[1]);
     lineset_t       lineset;
+    bool            first = true;
+
+    if (argc < 3) return -1;
+    if (std::strcmp(argv[2], "1") != 0) first = false;
 
     std::getline(in, s);
     while (! s.empty())
@@ -65,8 +102,10 @@ int main(int argc, char **argv)
     int total = 0;
     for (int i = 0; i < lineset.size(); i++)
     {
-        int n = get_forecast(&lineset[i]);
-        total += n;
+        if (first)
+            total += get_forecast(&lineset[i]);
+        else
+            total += get_backecast(&lineset[i]);
     }
     std::cout<<"Total "<<total<<std::endl;
 }
